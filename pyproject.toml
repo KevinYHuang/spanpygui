@@ -19,7 +19,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "toml>=0.10.2",
-    "numpy>=1.24.1",
+    "numpy==1.24.1",
     "Flask>=3.0.0",
     "TextGrid>=1.5",
     "scipy>=1.11.4",
