@@ -6,3 +6,4 @@ Flask==3.0.0
 TextGrid==1.5
 scipy==1.11.4
 moviepy==1.0.3
+opencv-python==4.8.1.78

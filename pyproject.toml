@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spanpygui"
+version = "0.0.1"
+description = "MRI Speech Analysis Toolkit"
+authors = [{ name = "Kevin Huang", email = "kevinyhu@usc.edu" }]
+license = { file = "LICENSE" }
+readme = "README.md"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: JavaScript",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "toml>=0.10.2",
+    "numpy>=1.24.1",
+    "Flask>=3.0.0",
+    "TextGrid>=1.5",
+    "scipy>=1.11.4",
+    "moviepy>=1.0.3",
+    "opencv-python>=4.8.1.78",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/KevinYHuang/spanpygui"
+"Bug Tracker" = "https://github.com/KevinYHuang/spanpygui/issues"
+
+[tool.hatch.build]
+include = [
+  "spanpygui/**/*.toml",
+  "**/*.py",  
+]
