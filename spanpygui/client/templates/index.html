@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/widget.css') }}">
+    <title>SPAN GUI</title>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="header-bar">
+            <div class="header-item">SPAN GUI</div>
+        </div>
+
+        <div class="main-container">
+            <div class="sub-container" style="width: 40%;">
+                <div class="viewport" style="height: 50%;">
+                    <img src="/test/video_feed">
+                </div>
+
+                <div class="resizer-vertical"></div>
+
+                <div class="outline"></div>
+            </div>
+
+            <div class="resizer-horizontal"></div>
+
+            <div class="sub-container">
+                <div class="widget-container" id="widget-container">
+                    <div class="playhead" , id="playhead"></div>
+
+                    <div class="widget-scroll-box" id="widget-scroll-box">
+                        <!-- Widgets go here -->
+                    </div>
+                </div>
+
+                <div class="resizer-vertical"></div>
+
+                <div class="terminal"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/resize.js') }}"></script>
+    <script>
+        function loadWidget(widget_name, parentId, index, height) {
+            fetch(`/load_widget/${widget_name}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    var newDiv = document.createElement('div');
+                    var resizer = document.createElement('div');
+                    newDiv.innerHTML = html;
+                    newDiv.style.height = height ? `${height}px` : '200px';
+                    resizer.classList.add('resizer-vertical')
+                    var parent = document.getElementById(parentId);
+                    if (index !== undefined && index < parent.children.length) {
+                        parent.insertBefore(resizer, parent.children[index]);
+                        parent.insertBefore(newDiv, parent.children[index]);
+                    } else {
+                        parent.appendChild(newDiv);
+                        parent.appendChild(resizer);
+                    }
+
+                    Array.from(newDiv.querySelectorAll("script"))
+                        .forEach( oldScriptEl => {
+                        const newScriptEl = document.createElement("script");
+                        
+                        Array.from(oldScriptEl.attributes).forEach( attr => {
+                            newScriptEl.setAttribute(attr.name, attr.value) 
+                        });
+                        
+                        const scriptText = document.createTextNode(oldScriptEl.innerHTML);
+                        newScriptEl.appendChild(scriptText);
+                        
+                        oldScriptEl.parentNode.replaceChild(newScriptEl, oldScriptEl);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error during fetch operation:', error);
+                });
+        }
+
+        loadWidget("timeline", "widget-container", 1);
+    </script>
+
+</body>
+
+</html>

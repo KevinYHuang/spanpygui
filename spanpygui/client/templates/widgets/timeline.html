@@ -1,0 +1,118 @@
+<div class="widget">
+    <div class="widget_controls">
+        <button id="playButton">Play</button>
+        <button id="pauseButton">Pause</button>
+    </div>
+    <div class="widget_timeline" id="timeline">
+        <!-- <div id="playhead"></div> -->
+    </div>
+
+    <script>
+        let min_time = 0
+        let max_time = 60
+        const playhead = document.getElementById('playhead');
+        const timeline = document.getElementById('timeline');
+        const widgetControls = document.querySelector('.widget_controls');
+        const playButton = document.getElementById('playButton');
+        const pauseButton = document.getElementById('pauseButton');
+
+        let isPlaying = false;
+        let isDragging = false;
+
+        function updatePlayheadPosition() {
+            if (isDragging) return
+            fetch('/test/player')
+                .then(response => response.json())
+                .then(data => {
+                    max_time = data.duration;
+                    isPlaying = data.playing;
+                    const percentage = (data.time - min_time) / (max_time - min_time);
+                    playhead.style.left = `${widgetControls.clientWidth + timeline.clientWidth * percentage}px`;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function handleMouseDown(event) {
+            if (!isPlaying) {
+                isDragging = true;
+            }
+        }
+
+        function handleMouseUp(event) {
+            isDragging = false;
+        }
+
+        function handleMouseMove(event) {
+            if (isDragging) {
+                const timelineRect = timeline.getBoundingClientRect();
+                const leftRange = widgetControls.clientWidth;
+                const rightRange = widgetControls.clientWidth + timeline.clientWidth;
+
+                let newPosition = event.clientX - timelineRect.left + leftRange;
+
+                // Constrain playhead position within the left range
+                newPosition = Math.max(leftRange, newPosition);
+                // Constrain playhead position within the right range
+                newPosition = Math.min(rightRange, newPosition);
+
+                playhead.style.left = `${newPosition}px`;
+
+                // Update the time based on the new position
+                const percentage = (newPosition - leftRange) / (rightRange - leftRange);
+                const newTime = min_time + percentage * (max_time - min_time);
+
+                // Make a Flask request to update the time
+                fetch('/test/player', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `time=${newTime}`,
+                })
+                    .then(response => response.json())
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+
+        playhead.addEventListener('mousedown', handleMouseDown);
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+
+        playButton.addEventListener('click', () => {
+            fetch('/test/player', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'play=1',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.playing) {
+                        console.log('Player is now playing');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        pauseButton.addEventListener('click', () => {
+            fetch('/test/player', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'play=0',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.playing) {
+                        console.log('Player is now paused');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        updatePlayheadPosition();
+        setInterval(updatePlayheadPosition, 50);
+    </script>
+</div>

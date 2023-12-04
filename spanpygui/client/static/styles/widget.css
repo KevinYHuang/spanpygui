@@ -1,0 +1,19 @@
+.widget {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    overflow: hidden;
+}
+
+.widget .widget_controls {
+    width: 100px;
+    background-color: #85878a;
+    overflow: hidden;
+}
+
+.widget .widget_timeline {
+    flex: 1;
+    background-color: #d0d3d8;
+    overflow: hidden;
+}

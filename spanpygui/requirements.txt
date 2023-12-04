@@ -1,0 +1,8 @@
+# install pytorch manually dependign on your os https://pytorch.org/get-started/locally/
+#sounddevice==0.4.6
+toml==0.10.2
+numpy==1.24.1
+Flask==3.0.0
+TextGrid==1.5
+scipy==1.11.4
+moviepy==1.0.3
