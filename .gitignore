@@ -1,4 +1,5 @@
 venv*/
-docs/
+docs/*
+!docs/*.png
 __pycache__/
 test.*
