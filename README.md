@@ -9,10 +9,10 @@ The priorities of this are as follows:
 - Performant
 
 What I want:
-<p align="center"><img src='docs/tool_image_2.png'></p>
+<p align="center"><img src='docs/tool_image_2.PNG'></p>
 
 What's there rn:
-<p align="center"><img src='docs/tool_image_3.png'></p>
+<p align="center"><img src='docs/tool_image_3.PNG'></p>
 
 ## Installation
 
