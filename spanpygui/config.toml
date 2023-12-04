@@ -1,8 +1,11 @@
 [audio]
 chunk_size = 512
-sample_rate = 48000
+sample_rate = 16000
 
 [render]
 width = 512
 height = 512
 workers = 8
+
+[files]
+model_dir = 'models'

@@ -45,12 +45,12 @@ class Frames(Data):
 class Audio(Data):
     def __init__(self, name, data=None, fs:int=config('audio', 'sample_rate', default=48000)):
         super().__init__(name, data)
-        self.data = [np.zeros(0)] if data is None else data
+        self.data = np.zeros(0) if data is None else data
         self.offset = 0
         self.fs = fs
 
     def __len__(self):
-        return len(self.data[0])
+        return self.data.shape[0]
 
 
 DEFAULT_PLOT_ARGS = {
@@ -101,6 +101,12 @@ class Text(Data):
 
     def __iter__(self):
         return iter(self.data)
+    
+    def add_interval(self, label, start, end):
+        assert not self.is_point, "Attempted adding interval to poitn tier"
+        # TODO overlap check
+        self.data.append(Text.Interval(start, end, label))
+
 
 
 # =====[ LOADING FUNCTIONS ] =====
