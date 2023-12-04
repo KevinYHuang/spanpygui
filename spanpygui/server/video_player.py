@@ -29,6 +29,7 @@ class VideoPlayer:
     
     def set_curr_time(self, t):
         self.curr_time = t
+        self.renderer.set_ref(int(t * self.fps))
     
     def get_curr_frame_num(self):
         return int(self.curr_time*self.fps)
@@ -47,15 +48,16 @@ class VideoPlayer:
         if self.last_time is not None:
             now = time.time()
             if self.curr_time + now - self.last_time >= len(self.renderer)/self.fps:
-                self.curr_time = len(self.renderer)/self.fps
+                self.set_curr_time(len(self.renderer)/self.fps)
                 self.last_time = None
             else:
-                self.curr_time += now - self.last_time
+                self.set_curr_time(self.curr_time + now - self.last_time)
                 self.last_time = now
         return self.renderer[int(self.curr_time*self.fps)]
 
     def play(self):
-        if self.curr_time >= len(self.renderer)/self.fps: self.curr_time = 0
+        if self.curr_time >= len(self.renderer)/self.fps: 
+            self.set_curr_time(0)
         self.last_time = time.time()
 
     def pause(self):
@@ -98,6 +100,10 @@ class VideoRenderer:
 
     def set_ref(self, ref):
         self.ref_index = ref
+        with self.queue_lock:
+            self.queue = sorted(set(self.queue))
+            split = bisect_left(self.queue, self.ref_index)
+            self.queue = self.queue[split:] + self.queue[:split]
 
     def render_frames(self, indices):
         # add the indices to the list and reorder the list to render ref first then anything sequentially afterwards wrapping around
