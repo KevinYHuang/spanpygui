@@ -132,7 +132,7 @@ class VideoRenderer:
         while self.running:
             i = self.get_next_frame()
             if i is None:
-                if tries > 3: self.stop()
+                #if tries > 3: self.stop()
                 tries += 1
                 time.sleep(1+np.random.rand())
             else:
