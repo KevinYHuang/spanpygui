@@ -1,6 +1,7 @@
 # run pip install openai-whisper
 # also consider distilwhisper https://www.reddit.com/r/MachineLearning/comments/17vqtcb/p_distilwhisper_a_distilled_variant_of_whisper/
 import whisper
+from whisper.tokenizer import get_tokenizer
 import os
 import numpy as np
 import torch
@@ -26,13 +27,21 @@ class Whisper():
         else:
             self.model = whisper.load_model(os.path.join(path, file + '.pt'))
 
+        tokenizer = get_tokenizer(multilingual=self.model.is_multilingual())  # use multilingual=True if using multilingual model
+        self.number_tokens = [
+            i 
+            for i in range(tokenizer.eot)
+            if all(c in "0123456789" for c in tokenizer.decode([i]).removeprefix(" "))
+        ]
+
         # send a "dummy message to warm it up"
         self.model.transcribe(np.array([0] * (1*512), dtype=np.float32), fp16=(self.properties['cuda'] and torch.cuda.is_available()))
 
-        self.ready = True
-
-    def transcribe(self, audio):
-        return self.model.transcribe(audio, fp16=(self.properties['cuda'] and torch.cuda.is_available()))['text'].strip()
+    def transcribe(self, audio, suppress_numbers=True):
+        return self.model.transcribe(audio, 
+                                     suppress_tokens=([-1]+self.number_tokens) if suppress_numbers else [], 
+                                     fp16=(self.properties['cuda'] and torch.cuda.is_available())
+                                     )['text'].strip()
     
 model = Whisper()
 

@@ -99,8 +99,14 @@ class Text(Data):
         self.data: list[Text.Point|Text.Interval] = [] if data is None else data
         self.is_point = point
 
+    def __len__(self):
+        return len(self.data)
+
     def __iter__(self):
         return iter(self.data)
+
+    def __getitem__(self, ind):
+        return self.data[ind]
     
     def add_interval(self, label, start, end):
         assert not self.is_point, "Attempted adding interval to poitn tier"

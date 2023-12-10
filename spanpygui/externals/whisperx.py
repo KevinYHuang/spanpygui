@@ -53,8 +53,10 @@ def transcribe_and_align(audio: Audio, return_scores=False, return_chars=False, 
     scores = Text('scores')
     char = Text('chars')
     char_scores = Text('char-scores')
+    saveword = []
     for segment in alignment['segments']:
         for data in segment['words']:
+            if 'start' not in data: continue
             text.add_interval(data['word'], data['start'], data['end'])
             scores.add_interval(str(data['score']), data['start'], data['end'])
         if not return_chars: continue
