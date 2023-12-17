@@ -1,8 +1,10 @@
 from moviepy.editor import VideoFileClip, AudioFileClip
 import numpy as np
 from scipy import io
+from scipy.sparse import csr_matrix
 from pathlib import Path
 import textgrid
+
 
 from spanpygui.server.config import config
 
@@ -71,8 +73,8 @@ class Segments(Data):
         if i not in self.prerender:
             transformed_data = self.data[i] - np.array((self.bounds[0],self.bounds[3]))[None,:]
             transformed_data = transformed_data * np.array((canvas.shape[1]/(self.bounds[1]-self.bounds[0]),canvas.shape[0]/(self.bounds[2]-self.bounds[3])))[None,:]
-            self.prerender[i] = render_segments(canvas, transformed_data, output_alpha=True, **self.plot_args)
-        canvas[:,:,:] = render_weighted(canvas, self.prerender[i])
+            self.prerender[i] = csr_matrix(render_segments(canvas, transformed_data, output_alpha=True, **self.plot_args), dtype=np.uint8)
+        canvas[:,:,:] = render_weighted(canvas, self.prerender[i].toarray())
         return canvas
     
 
