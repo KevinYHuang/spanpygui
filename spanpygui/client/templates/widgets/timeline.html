@@ -3,15 +3,15 @@
         <button id="playButton">Play</button>
         <button id="pauseButton">Pause</button>
     </div>
-    <div class="widget_timeline" id="timeline">
+    <canvas class="widget_timeline" id="main-timeline">
         <!-- <div id="playhead"></div> -->
-    </div>
+    </canvas>
 
     <script>
         let min_time = 0
         let max_time = 60
         const playhead = document.getElementById('playhead');
-        const timeline = document.getElementById('timeline');
+        const timeline = document.getElementById('main-timeline');
         const widgetControls = document.querySelector('.widget_controls');
         const playButton = document.getElementById('playButton');
         const pauseButton = document.getElementById('pauseButton');
