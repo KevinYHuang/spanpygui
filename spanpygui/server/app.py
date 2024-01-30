@@ -4,7 +4,8 @@ from threading import Thread
 from flask import Flask, request, render_template
 
 # Create an instance of Flask
-app = Flask(__name__, template_folder='../client/templates', static_folder='../client/static')
+client_path = os.path.join(os.path.dirname(__file__), '../client')
+app = Flask(__name__, template_folder=os.path.join(client_path, 'templates'), static_folder=os.path.join(client_path, 'static'))
 route = app.route
 
 # Define a route and a function to handle it

@@ -1,4 +1,3 @@
-from matplotlib.figure import Figure
 import io
 from PIL import Image
 import numpy as np
