@@ -131,7 +131,6 @@ class VideoRenderer:
             # 4. other multiples of the downsample factor
             # 5. all other frames
             self.queue.sort(key=lambda x: (not(x%self.downsample_factor==0 or x==len(self)-1 or x==self.ref_index), x < self.ref_index, x))
-            print(self.queue)
 
     def start(self):
         self.running = True
