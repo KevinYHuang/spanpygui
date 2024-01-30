@@ -1,7 +1,7 @@
 import os
 import webbrowser
 from threading import Thread
-from flask import Flask, render_template
+from flask import Flask, request, render_template
 
 # Create an instance of Flask
 app = Flask(__name__, template_folder='../client/templates', static_folder='../client/static')
@@ -12,9 +12,13 @@ route = app.route
 def index():
     return render_template('index.html')
 
-@route('/load_widget/<widget_name>')
+@route('/load_widget/<widget_name>', methods=['POST'])
 def load_widget(widget_name):
-    return render_template(f'widgets/{widget_name}.html')
+    try:
+        data = request.json
+        return render_template(f'widgets/{widget_name}.html', data=request.json)
+    except:
+        return render_template(f'widgets/{widget_name}.html')
 
 def run():
     def open_browser():

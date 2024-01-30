@@ -4,6 +4,7 @@ from scipy import io
 from scipy.sparse import csr_matrix
 from pathlib import Path
 import textgrid
+import cv2
 
 
 from spanpygui.server.config import config
@@ -27,17 +28,27 @@ class Data:
 
 
 class Frames(Data):
-    def __init__(self, name, data=None):
+    def __init__(self, name, data=None, prerender=False):
         super().__init__(name, data)
+        self.fps = config('render', 'default_fps', default=24)
         self.offset = 0
-        self.prerender = []
+        self.prerender = [] if prerender else None
         if data is not None: self.set_data(data)
 
     def set_data(self, data):
         self.data = data
         self.prerender = [None] * len(data)
 
+    def resize(self, shape):
+        for i in range(len(self)):
+            self.data[i] = cv2.resize(self.data[i], shape)
+
+    def set_fps(self, fps):
+        self.fps = fps
+
     def render(self, canvas, i):
+        if self.prerender is None:
+            canvas[:,:,:] = render_image(canvas, self.data[i])
         if self.prerender[i] is None:
             self.prerender[i] = render_image(canvas, self.data[i])
         canvas[:,:,:] = self.prerender[i]
@@ -62,15 +73,23 @@ DEFAULT_PLOT_ARGS = {
     'marker_size': 8,
 }
 class Segments(Data):
-    def __init__(self, name, data=None, plot_args={}, bounds=(0,84,84,0)):
+    def __init__(self, name, data=None, plot_args={}, bounds=(0,84,84,0), prerender=False):
         super().__init__(name, data)
         self.data = {} if data is None else data
         self.bounds = bounds
         self.plot_args = DEFAULT_PLOT_ARGS | plot_args
-        self.prerender = {}
+        self.prerender = {} if prerender else None
 
     def render(self, canvas, i):
+        if self.prerender is None:
+            transformed_data = self.data[i] - np.array((self.bounds[0],self.bounds[3]))[None,:]
+            transformed_data = transformed_data * np.array((canvas.shape[1]/(self.bounds[1]-self.bounds[0]),canvas.shape[0]/(self.bounds[2]-self.bounds[3])))[None,:]
+            rendered = render_segments(canvas, transformed_data, output_alpha=True, **self.plot_args)
+            canvas[:,:,:] = render_weighted(canvas, rendered)
+            return canvas
+        
         if i not in self.prerender:
+            # This is broken as you cannot have 3d sparse matrices. Fix later, but low priority
             transformed_data = self.data[i] - np.array((self.bounds[0],self.bounds[3]))[None,:]
             transformed_data = transformed_data * np.array((canvas.shape[1]/(self.bounds[1]-self.bounds[0]),canvas.shape[0]/(self.bounds[2]-self.bounds[3])))[None,:]
             self.prerender[i] = csr_matrix(render_segments(canvas, transformed_data, output_alpha=True, **self.plot_args), dtype=np.uint8)
@@ -124,6 +143,7 @@ def load_video(file, mono=True, fs=None):
     if fs is None: fs = config('audio', 'sample_rate', default=48000)
     clip = VideoFileClip(file, audio_fps=fs)
     frames = Frames(name, [f for f in clip.iter_frames()])
+    frames.set_fps(clip.fps)
 
     audio = None
     if clip.audio:

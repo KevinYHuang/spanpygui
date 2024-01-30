@@ -3,12 +3,13 @@
 
     </div>
     <canvas class="widget_timeline">
-        <!-- <div id="playhead"></div> -->
+        
     </canvas>
 
     <script>
-        function addInterval() {
-            
-        }
+        (()=>{
+            var data = {{data|tojson|safe}}
+            console.log(data)
+        })();
     </script>
 </div>

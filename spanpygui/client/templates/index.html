@@ -46,9 +46,16 @@
 
     <script src="{{ url_for('static', filename='js/resize.js') }}"></script>
     <script>
-        function loadWidget(widget_name, parentId, index, height) {
-            fetch(`/load_widget/${widget_name}`)
-                .then(response => {
+        function loadWidget(widget_name, parentId, index, options={}) {
+            fetch(`/load_widget/${widget_name}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ...options
+                    }),
+                }).then(response => {
                     if (!response.ok) {
                         throw new Error(`Network response was not ok: ${response.status}`);
                     }
@@ -58,10 +65,10 @@
                     var newDiv = document.createElement('div');
                     var resizer = document.createElement('div');
                     newDiv.innerHTML = html;
-                    newDiv.style.height = height ? `${height}px` : '200px';
-                    resizer.classList.add('resizer-vertical')
+                    newDiv.style.height = options.height ? `${options.height}px` : '200px';
+                    resizer.classList.add('resizer-horizontal')
                     var parent = document.getElementById(parentId);
-                    if (index !== undefined && index < parent.children.length) {
+                    if (index !== undefined && index >= 0 && index < parent.children.length) {
                         parent.insertBefore(resizer, parent.children[index]);
                         parent.insertBefore(newDiv, parent.children[index]);
                     } else {
@@ -89,6 +96,7 @@
         }
 
         loadWidget("timeline", "widget-container", 1);
+        loadWidget("text", "widget-scroll-box", -1, {foo: 'bar'});
     </script>
 
 </body>

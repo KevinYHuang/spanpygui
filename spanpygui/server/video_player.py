@@ -8,11 +8,14 @@ from spanpygui.server.config import config
 
 class VideoPlayer:
     def __init__(self):
-        self.fps = 83.28
+        self.fps = config('render', 'default_fps', default=83.28)
+        self.downsample_factor = config('render', 'playback_downsample', default=8)
+        self.dfps = self.fps / self.downsample_factor
+
         self.curr_time = 0
         self.last_time = None
         
-        self.renderer = VideoRenderer()
+        self.renderer = VideoRenderer(downsample_factor=self.downsample_factor)
         self.renderer.start()
 
     def set_fps(self, fps):
@@ -40,20 +43,26 @@ class VideoPlayer:
     def set_render_callback(self, cb):
         self.renderer.set_render_callback(cb)
 
-    def start_render_frames(self, indices):
-        self.renderer.render_frames(indices)
+    def start_render_frames(self, indices=None):
+        if indices is None: indices = np.arange(len(self.renderer))
+        self.renderer.set_render_frames(indices)
         if not self.renderer.is_running(): self.renderer.start()
 
     def get_curr_frame(self):
         if self.last_time is not None:
             now = time.time()
-            if self.curr_time + now - self.last_time >= len(self.renderer)/self.fps:
+            elapsed = now - self.last_time
+            if self.curr_time + elapsed >= len(self.renderer)/self.fps:
                 self.set_curr_time(len(self.renderer)/self.fps)
                 self.last_time = None
             else:
-                self.set_curr_time(self.curr_time + now - self.last_time)
+                self.set_curr_time(self.curr_time + elapsed)
                 self.last_time = now
-        return self.renderer[int(self.curr_time*self.fps)]
+        
+        index = int(self.curr_time * self.fps)
+        if self.is_playing(): # round to downsampled frame if playing
+            index = (index // self.downsample_factor) * self.downsample_factor
+        return self.renderer[index]
 
     def play(self):
         if self.curr_time >= len(self.renderer)/self.fps: 
@@ -69,11 +78,13 @@ class VideoPlayer:
 
 
 class VideoRenderer:
-    def __init__(self, render_callback=None):
+    def __init__(self, render_callback=None, downsample_factor=1):
         self.frames: list[np.ndarray] = []
         self.render_callback = render_callback
         self.queue: list[int] = []
+
         self.ref_index = 0 # Where to prioritize renderring from
+        self.downsample_factor = downsample_factor
 
         self.width = config('render', 'width', default=512)
         self.height = config('render', 'height', default=512)
@@ -81,6 +92,8 @@ class VideoRenderer:
         self.executor = ThreadPoolExecutor(max_workers=self.workers)
         self.queue_lock = threading.Lock()
         self.running = False
+
+        self.frame_render_time = None
 
     def __len__(self):
         return len(self.frames)
@@ -105,14 +118,20 @@ class VideoRenderer:
             split = bisect_left(self.queue, self.ref_index)
             self.queue = self.queue[split:] + self.queue[:split]
 
-    def render_frames(self, indices):
+    def set_render_frames(self, indices):
         # add the indices to the list and reorder the list to render ref first then anything sequentially afterwards wrapping around
         if max(indices)+1 > len(self.frames): self.set_num_frames(max(indices)+1)
         with self.queue_lock:
             self.queue += list(indices)
-            self.queue = sorted(set(self.queue))
-            split = bisect_left(self.queue, self.ref_index)
-            self.queue = self.queue[split:] + self.queue[:split]
+            self.queue = list(set(self.queue))
+            # Sort indices based on the following priority:
+            # 1. current reference index
+            # 2. multiples of the downsample factor up to the last frame
+            # 3. the last frame
+            # 4. other multiples of the downsample factor
+            # 5. all other frames
+            self.queue.sort(key=lambda x: (not(x%self.downsample_factor==0 or x==len(self)-1 or x==self.ref_index), x < self.ref_index, x))
+            print(self.queue)
 
     def start(self):
         self.running = True

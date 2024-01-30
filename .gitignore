@@ -2,5 +2,5 @@ venv*/
 docs/*
 !docs/*.png
 __pycache__/
-test.*
+test*.*
 models/

@@ -59,6 +59,7 @@ class Session:
 
         if render:
             self.player.start_render_frames(np.arange(len(frames)))
+        return frames.name, audio.name if audio else None
 
 
     def import_segments(self, file, render=True, **kwargs):
