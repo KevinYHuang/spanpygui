@@ -154,7 +154,7 @@ def load_video(file, mono=True, fs=None):
     clip.close()
     return frames, audio, clip.fps
 
-def load_segments(file, format='span2009'):
+def load_segments(file, format='span2009', size=84):
     if format == 'span2009':
         names = [
             'epiglottis', 'tongue', 'mandible', 'lower_lip', 'chin', 'neck',
@@ -177,8 +177,8 @@ def load_segments(file, format='span2009'):
                     for index, point in zip(i, v):
                         if index not in points_dict: points_dict[index] = []
                         corrected_point = np.zeros(2)
-                        corrected_point[0] = point[0] + 42
-                        corrected_point[1] = -point[1] + 41
+                        corrected_point[0] = point[0] + size // 2
+                        corrected_point[1] = -point[1] + size // 2 - 1
                         points_dict[index].append(corrected_point)
                     for index in sorted(points_dict.keys()):
                         segments[j][frameNo] = np.array(points_dict[index])
