@@ -30,6 +30,10 @@ dependencies = [
 flask = [
     "Flask>=3.0.0",
 ]
+notebook = [
+    "jupyter",
+    "tqdm",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/KevinYHuang/spanpygui"

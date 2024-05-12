@@ -1,6 +1,6 @@
 from moviepy.editor import VideoFileClip, AudioFileClip
 import numpy as np
-from scipy import io
+from scipy import io, signal
 from scipy.sparse import csr_matrix
 from pathlib import Path
 import textgrid
@@ -133,6 +133,11 @@ class Text(Data):
         assert not self.is_point, "Attempted adding interval to poitn tier"
         # TODO overlap check
         self.data.append(Text.Interval(start, end, label))
+    
+    def add_point(self, label, time):
+        assert self.is_point, "Attempted adding point to interval tier"
+        # TODO overlap check
+        self.data.append(Text.Point(time, label))
 
 
 
@@ -153,6 +158,16 @@ def load_video(file, mono=True, fs=None):
     
     clip.close()
     return frames, audio, clip.fps
+
+def load_audio(file, mono=True, fs=None):
+    name = Path(file).stem
+    if fs is None: fs = config('audio', 'sample_rate', default=48000)
+    sr, audio = io.wavfile.read(file)
+    audio = audio / np.iinfo(np.int16).max
+    if mono and len(audio.shape)>1: audio = np.mean(audio, axis=1)
+    audio = signal.resample(audio, int(audio.shape[0] / sr * fs))
+    return Audio(name, audio, fs)
+
 
 def load_segments(file, format='span2009', size=84):
     if format == 'span2009':
@@ -220,6 +235,7 @@ def write_textgrid(file: str, texts: list[Text]):
         if text.is_point:
             tier = textgrid.PointTier(text.name)
             for point in text: tier.add(point.time, point.label)
+            tier.maxTime = max([p.time for p in text])
         else:
             tier = textgrid.IntervalTier(text.name)
             for interval in text: tier.add(interval.start, interval.stop, interval.label)

@@ -1,6 +1,7 @@
-import io
+import os
 from PIL import Image
 import numpy as np
+import pickle
 
 from spanpygui.server.utils import increment_name
 from spanpygui.server.config import config
@@ -11,18 +12,46 @@ from spanpygui.utils.data import Frames, Audio, Segments, Track, Text, load_vide
 class Session:
 
     def __init__(self, name='Untitled'):
-        self.frames: dict[str,Frames] = {}
-        self.audios: dict[str,Audio] = {}
-        self.segments: dict[str,Segments] = {}
-        self.tracks: dict[str,Track] = {}
-        self.texts: dict[str,Text] = {}
+        if (os.path.exists(name) and name.endswith('.span')) or os.path.exists(f'{name}.span'):
+            self.load(name)
+        else:
+            self.frames: dict[str,Frames] = {}
+            self.audios: dict[str,Audio] = {}
+            self.segments: dict[str,Segments] = {}
+            self.tracks: dict[str,Track] = {}
+            self.texts: dict[str,Text] = {}
+            self.name = name
 
-        self.name = name
+        self.load = self._load
         self.fps = 83.28
-
         self.player = VideoPlayer()
         self.player.set_render_callback(self.render_frame)
 
+    def save(self, directory):
+        with open(os.path.join(directory, f'{self.name}.span'), 'wb') as f:
+            pickle.dump({
+                'frames': self.frames,
+                'audios': self.audios,
+                'segments': self.segments,
+                'tracks': self.tracks,
+                'texts': self.texts,
+            }, f)
+            
+    def _load(self, path):
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+            self.frames = data['frames']
+            self.audios = data['audios']
+            self.segments = data['segments']
+            self.tracks = data['tracks']
+            self.texts = data['texts']
+            self.name = os.path.splitext(os.path.basename(path))[0]
+
+    @staticmethod
+    def load(path):
+        s = Session(os.path.splitext(os.path.basename(path))[0])
+        s._load(path)
+        return s
 
     def play(self):
         self.player.play()

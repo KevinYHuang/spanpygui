@@ -6,3 +6,4 @@ test*.*
 models/
 install.sh
 *.avi
+test_*/
