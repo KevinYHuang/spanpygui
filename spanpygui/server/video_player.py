@@ -59,9 +59,9 @@ class VideoPlayer:
                 self.set_curr_time(self.curr_time + elapsed)
                 self.last_time = now
         
-        index = int(self.curr_time * self.fps)
+        index = min(int(self.curr_time * self.fps), len(self.renderer)-1)
         if self.is_playing(): # round to downsampled frame if playing
-            index = (index // self.downsample_factor) * self.downsample_factor
+            index = int(np.floor(index / self.downsample_factor) * self.downsample_factor)
         return self.renderer[index]
 
     def play(self):
