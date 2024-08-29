@@ -157,7 +157,7 @@ def load_video(file, mono=True, fs=None):
         audio = Audio(name, audio, fs)
     
     clip.close()
-    return frames, audio, clip.fps
+    return frames, audio
 
 def load_audio(file, mono=True, fs=None):
     name = Path(file).stem
