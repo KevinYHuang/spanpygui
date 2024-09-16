@@ -8,8 +8,8 @@ from spanpygui.server.config import config
 
 class VideoPlayer:
     def __init__(self):
-        self.fps = config('render', 'default_fps', default=83.28)
-        self.downsample_factor = config('render', 'playback_downsample', default=8)
+        self.fps = config('render', 'default_fps', default=24)
+        self.downsample_factor = np.ceil(self.fps / config('render', 'pb_min_fps', default=12))
         self.dfps = self.fps / self.downsample_factor
 
         self.curr_time = 0
@@ -85,6 +85,7 @@ class VideoRenderer:
 
         self.ref_index = 0 # Where to prioritize renderring from
         self.downsample_factor = downsample_factor
+        self.lazyness = 0 # 
 
         self.width = config('render', 'width', default=512)
         self.height = config('render', 'height', default=512)
@@ -130,6 +131,8 @@ class VideoRenderer:
             # 3. the last frame
             # 4. other multiples of the downsample factor
             # 5. all other frames
+            if self.lazyness > 0:
+                self.queue = [x for x in self.queue if np.abs(x-self.ref_index)<(1-self.laziness)*len(self)] # TODO
             self.queue.sort(key=lambda x: (not(x%self.downsample_factor==0 or x==len(self)-1 or x==self.ref_index), x < self.ref_index, x))
 
     def start(self):
@@ -149,6 +152,7 @@ class VideoRenderer:
         tries = 0
         while self.running:
             i = self.get_next_frame()
+            print(i)
             if i is None:
                 #if tries > 3: self.stop()
                 tries += 1

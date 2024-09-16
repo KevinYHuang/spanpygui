@@ -6,8 +6,9 @@ sample_rate = 16000
 width = 512
 height = 512
 workers = 8
-default_fps = 83.28
-playback_downsample = 4
+default_fps = 24
+format = 'jpeg'
+pb_min_fps = 12
 
 [files]
 model_dir = 'C:/Users/origa/Desktop/research/usc/span-mri-tools/spanpygui/models'

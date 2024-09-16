@@ -11,7 +11,7 @@ from spanpygui.utils.data import Frames, Audio, Segments, Track, Text, load_vide
 
 class Session:
 
-    def __init__(self, name='Untitled'):
+    def __init__(self, name='Untitled', use_renderer=False):
         if (os.path.exists(name) and name.endswith('.span')) or os.path.exists(f'{name}.span'):
             self.load(name)
         else:
@@ -24,8 +24,11 @@ class Session:
 
         self.load = self._load
         self.fps = 83.28
-        self.player = VideoPlayer()
-        self.player.set_render_callback(self.render_frame)
+        if use_renderer:
+            self.player = VideoPlayer()
+            self.player.set_render_callback(self.render_frame)
+        else:
+            self.player = None
 
     def save(self, directory):
         with open(os.path.join(directory, f'{self.name}.span'), 'wb') as f:
@@ -73,8 +76,9 @@ class Session:
         frames, audio, fps = load_video(file, **kwargs)
         if len(self.frames) == 0:
             self.fps = fps
-            self.player.set_fps(self.fps)
-            self.player.set_num_frames(len(frames))
+            if self.player:
+                self.player.set_fps(self.fps)
+                self.player.set_num_frames(len(frames))
         
         name = increment_name(frames.name, self.frames)
         if audio is not None: name = increment_name(frames.name, self.audios)
@@ -85,7 +89,7 @@ class Session:
             audio.set_name(name)
             self.audios[audio.name] = audio
 
-        if render:
+        if render and self.player:
             self.player.start_render_frames(np.arange(len(frames)))
         return frames, audio
 
@@ -98,7 +102,7 @@ class Session:
             self.segments[s.name] = s
             indices += list(s.data.keys())
 
-        if render:
+        if render and self.player:
             self.player.start_render_frames(indices)
 
         return segments

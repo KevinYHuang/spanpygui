@@ -9,7 +9,7 @@ from spanpygui.server.utils import increment_name
 sessions: dict[str,Session] = {}
 
 def new_session(name):
-    s = Session(name=name)
+    s = Session(name=name, use_renderer=True)
     s.name = increment_name(s.name, sessions)
     sessions[s.name] = s
     return s
