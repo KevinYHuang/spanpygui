@@ -27,7 +27,7 @@ class Whisper():
         else:
             self.model = whisper.load_model(os.path.join(path, file + '.pt'))
 
-        tokenizer = get_tokenizer(multilingual=self.model.is_multilingual())  # use multilingual=True if using multilingual model
+        tokenizer = get_tokenizer(multilingual=self.model.is_multilingual)  # use multilingual=True if using multilingual model
         self.number_tokens = [
             i 
             for i in range(tokenizer.eot)

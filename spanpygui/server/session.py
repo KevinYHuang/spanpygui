@@ -70,9 +70,9 @@ class Session:
 
 
     def import_video(self, file, render=True, **kwargs):
-        frames, audio, fps = load_video(file, **kwargs)
+        frames, audio = load_video(file, **kwargs)
         if len(self.frames) == 0:
-            self.fps = fps
+            self.fps = frames.fps
             self.player.set_fps(self.fps)
             self.player.set_num_frames(len(frames))
         

@@ -152,7 +152,9 @@ def load_video(file, mono=True, fs=None):
 
     audio = None
     if clip.audio:
-        audio = clip.audio.to_soundarray()
+        audio_samples = list(clip.audio.iter_frames())
+        audio = np.array(audio_samples)
+        #audio = clip.audio.to_soundarray()
         if mono: audio = np.mean(audio, axis=1)
         audio = Audio(name, audio, fs)
     

@@ -37,7 +37,7 @@ DEFAULT = {
     'language': 'en'
 }
 
-def transcribe_and_align(audio: Audio, return_scores=False, return_chars=False, **kwargs) -> Text:
+def transcribe_and_align(audio: Audio, return_scores=True, return_chars=True, **kwargs) -> Text:
     kwargs = DEFAULT | kwargs
 
     global model

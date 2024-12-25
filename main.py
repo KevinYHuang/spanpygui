@@ -1,6 +1,6 @@
 import time
 from spanpygui.server.app import run
-from spanpygui.server.runtime import new_session
+from spanpygui.server.runtime import new_sessionsed 
 
 if __name__ == "__main__":
     s = new_session('test')
