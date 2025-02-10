@@ -19,7 +19,7 @@ def mfa(audio: Audio, text: Text, dict='english_us_arpa', model='english_us_arpa
         text_file.write(' '.join([a.label for a in text]))
         
     # Run mfa
-    mfa_command = f'conda run -n {conda_env} mfa align --final_clean {temp_dir} {dict} {model} {temp_dir}'
+    mfa_command = f'conda run -n {conda_env} mfa align --clean {temp_dir} {dict} {model} {temp_dir}'
     subprocess.run(mfa_command, shell=True)
 
     # Parse output and clean up

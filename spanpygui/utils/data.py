@@ -1,6 +1,7 @@
 from moviepy.editor import VideoFileClip, AudioFileClip
 import numpy as np
 from scipy import io, signal
+import soundfile as sf
 from scipy.sparse import csr_matrix
 from pathlib import Path
 import textgrid
@@ -120,6 +121,15 @@ class Text(Data):
         self.data: list[Text.Point|Text.Interval] = [] if data is None else data
         self.is_point = point
 
+    @staticmethod
+    def from_str(str):
+        t = Text('', point=True)
+        t.add_point(str, 0)
+        return t
+
+    def __repr__(self):
+        return f'[{self.name}]: ' + ' '.join(t.label for t in self)
+
     def __len__(self):
         return len(self.data)
 
@@ -130,7 +140,7 @@ class Text(Data):
         return self.data[ind]
     
     def add_interval(self, label, start, end):
-        assert not self.is_point, "Attempted adding interval to poitn tier"
+        assert not self.is_point, "Attempted adding interval to point tier"
         # TODO overlap check
         self.data.append(Text.Interval(start, end, label))
     
@@ -164,10 +174,12 @@ def load_video(file, mono=True, fs=None):
 def load_audio(file, mono=True, fs=None):
     name = Path(file).stem
     if fs is None: fs = config('audio', 'sample_rate', default=48000)
-    sr, audio = io.wavfile.read(file)
-    audio = audio / np.iinfo(np.int16).max
+    #sr, audio = io.wavfile.read(file)
+    audio, sr = sf.read(file, always_2d=False)
+    if np.issubdtype(audio.dtype, np.integer):
+        audio = audio / np.iinfo(np.int16).max
     if mono and len(audio.shape)>1: audio = np.mean(audio, axis=1)
-    audio = signal.resample(audio, int(audio.shape[0] / sr * fs))
+    if sr != fs: audio = signal.resample(audio, int(audio.shape[0] / sr * fs))
     return Audio(name, audio, fs)
 
 
