@@ -69,9 +69,9 @@ def _PER(pred:Text, ref:Text, weight={}, pclasses=PHONEME_CLASSES, sanitize_mark
     def split_tokens(txt:Text):
         out = []
         for t in txt:
-            for p in t.label.split():
-                if sanitize_markers: p = re.sub(r"[ˈːˌˑ‿ʰ̃˥˩̪̥̬̟̠ʷʲˠˤ˞̤̰]", "", p)
-                if p: out.append(p)
+            for p in t.label:
+                if sanitize_markers and p in r"[ˈːˌˑ‿ʰ̃˥˩̪̥̬̟̠ʷʲˠˤ˞̤̰]": continue
+                elif p: out.append(p)
         return out
     ref_list = split_tokens(ref)
     pred_list = split_tokens(pred)

@@ -12,7 +12,8 @@ from spanpygui import Audio, Text
 class Wav2Vec2XLSRPhoneme():
     def __init__(self, *args, **kwargs):
         self.properties = {
-            'model_name': 'facebook/wav2vec2-xlsr-53-espeak-cv-ft',
+            #'model_name': 'facebook/wav2vec2-xlsr-53-espeak-cv-ft',
+            'model_name': 'vitouphy/wav2vec2-xls-r-300m-timit-phoneme',
             'cuda': True
         } | kwargs
         self._get_model()
